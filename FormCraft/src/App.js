@@ -1,11 +1,11 @@
-import './App.css';
-import FormEditor from './formEditor/FormEditor';
+
+import Home from "./home/Home"
 
 function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <FormEditor />
+        <Home/>
       </header>
     </div>
   );
