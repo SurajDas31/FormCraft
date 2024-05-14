@@ -1,8 +1,12 @@
 import { useState } from "react";
-
+import SignIn from "../auth/SignIn";
+import logo from "../images/logo.png"
 
 
 const Home = () => {
+
+    const [signInOpen, setsignInOpen] = useState(false)
+
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
     return (
@@ -13,9 +17,9 @@ const Home = () => {
                         <a href="/" className="-m-1.5 p-1.5">
                             <span className="sr-only">FormCraft</span>
                             <img
-                                className="h-8 w-auto"
-                                src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
-                                alt=""
+                                className="h-10 w-auto"
+                                src={logo}
+                                alt="FormCraft"
                             />
                         </a>
                     </div>
@@ -29,12 +33,12 @@ const Home = () => {
                         </button>
                     </div>
                     <div className="hidden lg:flex lg:gap-x-12">
-                        
+
                     </div>
                     <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-                        <a href="/login" className="text-sm font-semibold leading-6 text-gray-900">
+                        <button onClick={() => setsignInOpen(true)} className="text-sm font-semibold leading-6 text-gray-900">
                             Log in <span aria-hidden="true">&rarr;</span>
-                        </a>
+                        </button>
                     </div>
                 </nav>
             </header>
@@ -68,12 +72,12 @@ const Home = () => {
                             >
                                 Dashboard
                             </a>
-                            
+
                         </div>
                     </div>
                 </div>
                 <div
-                    className="absolute inset-x-0 top-[calc(100%-13rem)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(100%-30rem)]"
+                    className="absolute inset-x-0 top-[calc(20%)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(100% - 40em)]"
                     aria-hidden="true"
                 >
                     <div
@@ -85,6 +89,7 @@ const Home = () => {
                     />
                 </div>
             </div>
+            <SignIn open={signInOpen} setOpen={() => { setsignInOpen(false) }} />
         </div>
 
     );
