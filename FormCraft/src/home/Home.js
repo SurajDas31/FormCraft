@@ -1,5 +1,5 @@
 import { useState } from "react";
-import SignIn from "../auth/SignIn";
+import Auth from "../auth/Auth";
 import logo from "../images/logo.png"
 
 
@@ -89,7 +89,7 @@ const Home = () => {
                     />
                 </div>
             </div>
-            <SignIn open={signInOpen} setOpen={() => { setsignInOpen(false) }} />
+            <Auth open={signInOpen} setOpen={() => { setsignInOpen(false) }} />
         </div>
 
     );
