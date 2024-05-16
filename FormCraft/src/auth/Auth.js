@@ -9,8 +9,8 @@ const Auth = ({ open, setOpen }) => {
 
 
     return (
-        <Transition.Root show={open} as={Fragment}>
-            <Dialog className="relative z-10" onClose={setOpen}>
+        <Transition.Root show={open} as={Fragment} >
+            <Dialog className="relative z-10" onClose={() => { setOpen(); setSignInToggle(true) }}>
                 <Transition.Child
                     as={Fragment}
                     enter="ease-out duration-300"
@@ -35,7 +35,7 @@ const Auth = ({ open, setOpen }) => {
                             leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                         >
                             <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
-                                {signInToggle ? <SignIn setSignInToggle={()=> setSignInToggle(false)} /> : <SignUp setSignInToggle={()=> setSignInToggle(true)}/>}
+                                {signInToggle ? <SignIn setSignInToggle={() => setSignInToggle(false)} /> : <SignUp setSignInToggle={() => setSignInToggle(true)} />}
                             </Dialog.Panel>
                         </Transition.Child>
                     </div>

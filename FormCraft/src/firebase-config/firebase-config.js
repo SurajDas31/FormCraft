@@ -27,7 +27,7 @@ const provider = new GoogleAuthProvider();
 export const SignInWithGoogle = () => {
     signInWithPopup(auth, provider)
     .then((result) =>{
-        console.log(result);
+        console.log(result._tokenResponse);
     })
     .catch((error) => {
         console.log(error);

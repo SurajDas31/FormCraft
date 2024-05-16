@@ -1,13 +1,19 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Auth from "../auth/Auth";
 import logo from "../images/logo.png"
+import { auth } from "../firebase-config/firebase-config";
 
 
 const Home = () => {
 
     const [signInOpen, setsignInOpen] = useState(false)
 
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+    const [user, setUser] = useState(auth.currentUser)
+
+    useEffect(() => {
+        setUser(auth.currentUser);
+        console.log(user);
+    },)
 
     return (
         <div className="bg-white">
@@ -23,22 +29,17 @@ const Home = () => {
                             />
                         </a>
                     </div>
-                    <div className="flex lg:hidden">
-                        <button
-                            type="button"
-                            className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700"
-                            onClick={() => setMobileMenuOpen(true)}
-                        >
-                            <span className="sr-only">Open main menu</span>
-                        </button>
-                    </div>
-                    <div className="hidden lg:flex lg:gap-x-12">
-
-                    </div>
                     <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-                        <button onClick={() => setsignInOpen(true)} className="text-sm font-semibold leading-6 text-gray-900">
-                            Log in <span aria-hidden="true">&rarr;</span>
-                        </button>
+                        {
+                            user === null ? <button onClick={() => setsignInOpen(true)} className="text-sm font-semibold leading-6 text-gray-900">
+                                Log in <span aria-hidden="true">&rarr;</span>
+                            </button> :
+                                user.currentUser === null ?
+                                    <button onClick={() => setsignInOpen(true)} className="text-sm font-semibold leading-6 text-gray-900">
+                                        Log in <span aria-hidden="true">&rarr;</span>
+                                    </button> :
+                                    <img className="inline-block h-9 w-9 rounded-full ring-2 ring-white" src={user.photoURL} alt={user.displayName} />}
+
                     </div>
                 </nav>
             </header>
