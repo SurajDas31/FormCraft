@@ -1,12 +1,17 @@
 import SignIn from "./SignIn";
 import { Dialog, Transition } from '@headlessui/react'
-import { Fragment, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import SignUp from "./SignUp";
+import { auth } from "../firebase-config/firebase-config";
 
 const Auth = ({ open, setOpen }) => {
 
     const [signInToggle, setSignInToggle] = useState(true);
 
+    useEffect(() => {
+        if (auth.currentUser !== null)
+            setOpen();
+    });
 
     return (
         <Transition.Root show={open} as={Fragment} >
