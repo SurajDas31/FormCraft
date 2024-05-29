@@ -28,6 +28,7 @@ export const SignInWithGoogle = () => {
     signInWithPopup(auth, provider)
     .then((result) =>{
         console.log(result._tokenResponse);
+        return true;
     })
     .catch((error) => {
         console.log(error);

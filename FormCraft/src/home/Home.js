@@ -1,16 +1,19 @@
+
 import { useEffect, useState } from "react";
 import Auth from "../auth/Auth";
 import logo from "../images/logo.png"
 import Dashboard from "./Dashboard";
+import { auth } from "../firebase-config/firebase-config";
+import { Avatar, Dropdown } from "flowbite-react";
 
-const Home = ({ auth }) => {
+const Home = ({ user, setUser }) => {
 
     const [signInOpen, setsignInOpen] = useState(false)
 
     const [dashboardOpen, setDashboardOpen] = useState(false)
 
     useEffect(() => {
-        console.log(auth);
+        setUser(auth.currentUser)
     })
 
     return (
@@ -28,14 +31,27 @@ const Home = ({ auth }) => {
                         </a>
                     </div>
                     <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-                        {console.log(auth.currentUser)}
+
                         {
-                            auth.currentUser === null ?
+                            (user === null || user === undefined) ?
                                 <button onClick={() => setsignInOpen(true)} className="text-sm font-semibold leading-6 text-gray-900">
                                     Log in <span aria-hidden="true">&rarr;</span>
                                 </button> :
-                                <img className="inline-block h-9 w-9 rounded-full ring-2 ring-white" src={auth.currentUser.photoURL} alt={auth.currentUser.displayName} />}
-
+                                <Dropdown
+                                    label={<Avatar img={user.photoURL} alt={user.displayName} rounded />}
+                                    arrowIcon={false}
+                                    inline
+                                >
+                                    <Dropdown.Header>
+                                        <span className="block text-sm">{user.displayName}</span>
+                                        <span className="block truncate text-sm font-medium">{user.email}</span>
+                                    </Dropdown.Header>
+                                    <Dropdown.Item>Dashboard</Dropdown.Item>
+                                    <Dropdown.Item>Settings</Dropdown.Item>
+                                    <Dropdown.Divider />
+                                    <Dropdown.Item>Sign out</Dropdown.Item>
+                                </Dropdown>
+                        }
                     </div>
                 </nav>
             </header>
@@ -64,7 +80,7 @@ const Home = ({ auth }) => {
                         </p>
                         <div className="mt-10 flex items-center justify-center gap-x-6">
                             <div className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 cursor-pointer"
-                                onClick={() => auth.currentUser ? setsignInOpen(true) : setDashboardOpen(true)}
+                                onClick={() => user === null ? setsignInOpen(true) : ""}
                             >
                                 Dashboard
                             </div>
