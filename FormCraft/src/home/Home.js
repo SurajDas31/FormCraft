@@ -1,20 +1,22 @@
 
 import { useEffect, useState } from "react";
-import Auth from "../auth/Auth";
 import logo from "../images/logo.png"
-import Dashboard from "./Dashboard";
 import { auth } from "../firebase-config/firebase-config";
 import { Avatar, Dropdown } from "flowbite-react";
+import HomePageBody from "./HomePageBody";
+import Auth from "../auth/Auth";
+import Dashboard from "../DashBoard/Dashboard";
 
-const Home = ({ user, setUser }) => {
-
-    const [signInOpen, setsignInOpen] = useState(false)
+const Home = () => {
 
     const [dashboardOpen, setDashboardOpen] = useState(false)
 
+    const [signInOpen, setsignInOpen] = useState(false)
+
     useEffect(() => {
-        setUser(auth.currentUser)
-    })
+        // setUser(auth.currentUser)
+        console.log(dashboardOpen)
+    },[dashboardOpen, signInOpen])
 
     return (
         <div className="bg-white">
@@ -33,23 +35,23 @@ const Home = ({ user, setUser }) => {
                     <div className="hidden lg:flex lg:flex-1 lg:justify-end">
 
                         {
-                            (user === null || user === undefined) ?
+                            (auth.currentUser === null || auth.currentUser === undefined) ?
                                 <button onClick={() => setsignInOpen(true)} className="text-sm font-semibold leading-6 text-gray-900">
                                     Log in <span aria-hidden="true">&rarr;</span>
                                 </button> :
                                 <Dropdown
-                                    label={<Avatar img={user.photoURL} alt={user.displayName} rounded />}
+                                    label={<Avatar img={auth.currentUser.photoURL} alt={auth.currentUser.displayName} rounded />}
                                     arrowIcon={false}
                                     inline
                                 >
                                     <Dropdown.Header>
-                                        <span className="block text-sm">{user.displayName}</span>
-                                        <span className="block truncate text-sm font-medium">{user.email}</span>
+                                        <span className="block text-sm">{auth.currentUser.displayName}</span>
+                                        <span className="block truncate text-sm font-medium">{auth.currentUser.email}</span>
                                     </Dropdown.Header>
                                     <Dropdown.Item>Dashboard</Dropdown.Item>
                                     <Dropdown.Item>Settings</Dropdown.Item>
                                     <Dropdown.Divider />
-                                    <Dropdown.Item>Sign out</Dropdown.Item>
+                                    <Dropdown.Item onClick={() => auth.signOut()}>Sign out</Dropdown.Item>
                                 </Dropdown>
                         }
                     </div>
@@ -69,24 +71,9 @@ const Home = ({ user, setUser }) => {
                         }}
                     />
                 </div>
-                <div className="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">
-                    <div className="text-center">
-                        <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-                            Data to enrich your online business
-                        </h1>
-                        <p className="mt-6 text-lg leading-8 text-gray-600">
-                            Anim aute id magna aliqua ad ad non deserunt sunt. Qui irure qui lorem cupidatat commodo. Elit sunt amet
-                            fugiat veniam occaecat fugiat aliqua.
-                        </p>
-                        <div className="mt-10 flex items-center justify-center gap-x-6">
-                            <div className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 cursor-pointer"
-                                onClick={() => user === null ? setsignInOpen(true) : ""}
-                            >
-                                Dashboard
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                {dashboardOpen ?
+                    <Dashboard dashboardOpen={dashboardOpen} setDashboardOpen={() => { setDashboardOpen(false) }} /> :
+                    <HomePageBody setOpen={(params) => { setsignInOpen(params) }} setDashboardOpen={() => { setDashboardOpen(true) }} />}
                 <div
                     className="absolute inset-x-0 top-[calc(20%)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(100% - 40em)]"
                     aria-hidden="true"
@@ -100,8 +87,8 @@ const Home = ({ user, setUser }) => {
                     />
                 </div>
             </div>
+
             <Auth open={signInOpen} setOpen={() => { setsignInOpen(false) }} />
-            <Dashboard open={dashboardOpen} setDashboardOpen={() => { setDashboardOpen(false) }} />
         </div>
 
     );
