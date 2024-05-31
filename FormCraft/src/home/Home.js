@@ -40,7 +40,7 @@ const Home = () => {
                                     Log in <span aria-hidden="true">&rarr;</span>
                                 </button> :
                                 <Dropdown
-                                    label={<Avatar img={auth.currentUser.photoURL} alt={auth.currentUser.displayName} rounded />}
+                                    label={<Avatar className="h-9 w-auto" img={auth.currentUser.photoURL} alt={auth.currentUser.displayName} rounded />}
                                     arrowIcon={false}
                                     inline
                                 >
