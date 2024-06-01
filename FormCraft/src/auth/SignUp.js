@@ -7,7 +7,7 @@ const SignUp = ({ setSignInToggle }) => {
     return (
         <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
             <div>
-                <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                <div className="mt-3 text-left sm:ml-4 sm:mt-0 sm:text-left">
                     <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
                         <div className="sm:mx-auto sm:w-full sm:max-w-sm">
                             <img
