@@ -100,7 +100,7 @@ const SignUp = ({ setSignInToggle }) => {
 
                                     <div className='text-center text-sm text-gray-500 flex my-1'>
                                         <div className="border-e-gray-500 border w-full my-2 h-0 inline-block"></div>
-                                        <div className="inline-block">OR</div>
+                                        <div className="inline-block">&nbsp;OR&nbsp;</div>
                                         <div className="border-e-gray-500 border w-full my-2 h-0 inline-block"></div>
                                     </div>
 
@@ -122,7 +122,7 @@ const SignUp = ({ setSignInToggle }) => {
                             <div className="flex mt-10 justify-center text-sm text-gray-500">
                                 <p className='leading-6'>Already a member? {' '}</p>
                                 <p onClick={setSignInToggle} className="font-semibold leading-6 text-indigo-600 hover:text-indigo-500 cursor-pointer">
-                                    Click Here
+                                    &nbsp;Click Here
                                 </p>
                             </div>
                         </div>
