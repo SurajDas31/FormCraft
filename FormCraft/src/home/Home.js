@@ -6,6 +6,7 @@ import { Avatar, Dropdown } from "flowbite-react";
 import HomePageBody from "./HomePageBody";
 import Auth from "../auth/Auth";
 import Dashboard from "../DashBoard/Dashboard";
+import { onAuthStateChanged } from "firebase/auth";
 
 const Home = () => {
 
@@ -13,9 +14,14 @@ const Home = () => {
 
     const [signInOpen, setsignInOpen] = useState(false)
 
+    const [user, setUser] = useState({});
+    
+
     useEffect(() => {
         // setUser(auth.currentUser)
-        console.log(dashboardOpen)
+        onAuthStateChanged(auth, (currentUser) => {
+            setUser(currentUser);
+        })
     },[dashboardOpen, signInOpen])
 
     return (
@@ -35,23 +41,23 @@ const Home = () => {
                     <div className="hidden lg:flex lg:flex-1 lg:justify-end">
 
                         {
-                            (auth.currentUser === null || auth.currentUser === undefined) ?
+                            (user === null || user === undefined) ?
                                 <button onClick={() => setsignInOpen(true)} className="text-sm font-semibold leading-6 text-gray-900">
                                     Log in <span aria-hidden="true">&rarr;</span>
                                 </button> :
                                 <Dropdown
-                                    label={<Avatar className="h-9 w-auto" img={auth.currentUser.photoURL} alt={auth.currentUser.displayName} rounded />}
+                                    label={<Avatar className="h-9 w-auto" img={user?.photoURL} alt={user?.displayName} rounded />}
                                     arrowIcon={false}
                                     inline
                                 >
                                     <Dropdown.Header>
-                                        <span className="block text-sm">{auth.currentUser.displayName}</span>
-                                        <span className="block truncate text-sm font-medium">{auth.currentUser.email}</span>
+                                        <span className="block text-sm">{user?.displayName}</span>
+                                        <span className="block truncate text-sm font-medium">{user?.email}</span>
                                     </Dropdown.Header>
                                     <Dropdown.Item>Dashboard</Dropdown.Item>
                                     <Dropdown.Item>Settings</Dropdown.Item>
                                     <Dropdown.Divider />
-                                    <Dropdown.Item onClick={() => auth.signOut()}>Sign out</Dropdown.Item>
+                                    <Dropdown.Item onClick={() => {auth.signOut(); setDashboardOpen(false)}}>Sign out</Dropdown.Item>
                                 </Dropdown>
                         }
                     </div>
