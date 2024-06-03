@@ -1,11 +1,6 @@
-
-import { useEffect, useState} from "react";
 import Home from "./home/Home"
-import { auth } from "./firebase-config/firebase-config";
 
 function App() {
-
-  
 
   return (
     <div className="App">
