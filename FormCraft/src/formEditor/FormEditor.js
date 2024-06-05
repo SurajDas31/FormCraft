@@ -1,12 +1,37 @@
 import { CKEditor } from 'ckeditor4-react';
 import { Button, Dialog, DialogTitle, Transition } from '@headlessui/react';
-import { Fragment } from 'react';
+import { Fragment, useRef } from 'react';
+import { Timestamp, addDoc, collection } from 'firebase/firestore';
+import { firestore } from '../firebase-config/firebase-config';
 
 
 const FormEditor = ({ formEditorOpen, setFormEditorOpen }) => {
 
-    return (
+    const editorContent = useRef(null);
 
+    const handleEditorChange = (event, editor) => {
+        const text = event.editor.getData();
+        editorContent.current = text;
+        console.log(editorContent);
+    };
+
+    const saveForm = async (event) => {
+        event.preventDefault();
+        try {
+            await addDoc(collection(firestore, 'form_templates'), {
+                title: "Test",
+                created: Timestamp.now(),
+                rawData: editorContent,
+            })
+            
+            setFormEditorOpen()
+        } catch (err) {
+            alert(err)
+        }
+
+    }
+
+    return (
         <>
             <Transition.Root show={formEditorOpen} as={Fragment} >
                 <Dialog className="relative z-10" onClose={() => { setFormEditorOpen() }}>
@@ -39,17 +64,13 @@ const FormEditor = ({ formEditorOpen, setFormEditorOpen }) => {
                                     </DialogTitle>
                                     <div>
                                         <CKEditor
-                                            onChange={(event, editor) => {
-                                                console.log(event);
-                                                console.log(editor);
-                                            }}
-                                            initData="<p>This is an example CKEditor 4 WYSIWYG editor instance.</p>"
+                                            onChange={handleEditorChange}
                                         />
                                     </div>
                                     <div className="flex p-4 justify-end space-x-2">
                                         <Button
                                             className="inline-flex items-center gap-2 rounded-md bg-indigo-500 py-1.5 px-3 text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:outline-none data-[hover]:bg-gray-600 data-[open]:bg-gray-700 data-[focus]:outline-1 data-[focus]:outline-white"
-                                            onClick={setFormEditorOpen}>
+                                            onClick={saveForm}>
                                             Save
                                         </Button>
                                         <Button
@@ -64,8 +85,8 @@ const FormEditor = ({ formEditorOpen, setFormEditorOpen }) => {
                     </div>
                 </Dialog>
             </Transition.Root>
-        </>);
-
+        </>
+    );
 }
 
 export default FormEditor;
