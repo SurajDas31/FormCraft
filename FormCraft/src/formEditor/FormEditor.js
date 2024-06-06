@@ -1,15 +1,23 @@
 import { CKEditor } from 'ckeditor4-react';
 import { Button, Dialog, DialogTitle, Transition } from '@headlessui/react';
-import { Fragment, useRef } from 'react';
-import { Timestamp, addDoc, collection } from 'firebase/firestore';
-import { firestore } from '../firebase-config/firebase-config';
+import { Fragment, useEffect, useRef, useState } from 'react';
+import { Timestamp, addDoc, collection, updateDoc } from 'firebase/firestore';
+import { auth, firestore } from '../firebase-config/firebase-config';
 
 
-const FormEditor = ({ formEditorOpen, setFormEditorOpen }) => {
+const FormEditor = ({ form, formEditorOpen, setFormEditorOpen }) => {
+
+    const [saveButtonDisable, setSaveButtonDisable] = useState(true);
+
+    useEffect(() => {
+        console.log(form);
+        // fetchPost();
+    }, [formEditorOpen]);
 
     const editorContent = useRef(null);
 
     const handleEditorChange = (event, editor) => {
+        setSaveButtonDisable(false);
         const text = event.editor.getData();
         editorContent.current = text;
         console.log(editorContent);
@@ -17,17 +25,37 @@ const FormEditor = ({ formEditorOpen, setFormEditorOpen }) => {
 
     const saveForm = async (event) => {
         event.preventDefault();
-        try {
-            await addDoc(collection(firestore, 'form_templates'), {
-                title: "Test",
-                created: Timestamp.now(),
-                rawData: editorContent,
-            })
-            
-            setFormEditorOpen()
-        } catch (err) {
-            alert(err)
+
+        if (form === null) {
+            try {
+                await addDoc(collection(firestore, 'form_templates'), {
+                    title: "Test",
+                    created: Timestamp.now(),
+                    rawData: editorContent.current,
+                    user: auth.currentUser.uid
+                })
+
+                setFormEditorOpen()
+            } catch (err) {
+                alert(err)
+            }
+        } else {
+            try {
+
+                await updateDoc(collection(firestore, "form_templates", form.id), {
+
+                    title: form.data().title,
+                    created: Timestamp.now(),
+                    rawData: editorContent.current,
+                    user: auth.currentUser.uid
+                })
+
+                setFormEditorOpen()
+            } catch (err) {
+                alert(err)
+            }
         }
+
 
     }
 
@@ -60,17 +88,19 @@ const FormEditor = ({ formEditorOpen, setFormEditorOpen }) => {
                             >
                                 <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-11/12">
                                     <DialogTitle as="h2" className="text-xl font-medium bg-gradient-to-bl  from-[#816ed6] p-4">
-                                        Editor
+                                        <input id="formName" type='text' className="bg-inherit border-none focus:border-none" defaultValue={form === null ? "Test" : form.data().title} />
                                     </DialogTitle>
                                     <div>
                                         <CKEditor
                                             onChange={handleEditorChange}
+                                            initData={form?.data().rawData}
                                         />
                                     </div>
                                     <div className="flex p-4 justify-end space-x-2">
                                         <Button
                                             className="inline-flex items-center gap-2 rounded-md bg-indigo-500 py-1.5 px-3 text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:outline-none data-[hover]:bg-gray-600 data-[open]:bg-gray-700 data-[focus]:outline-1 data-[focus]:outline-white"
-                                            onClick={saveForm}>
+                                            onClick={saveForm}
+                                            disabled={saveButtonDisable}>
                                             Save
                                         </Button>
                                         <Button

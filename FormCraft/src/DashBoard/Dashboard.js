@@ -1,82 +1,42 @@
 import { Dropdown } from "flowbite-react";
-import { auth } from "../firebase-config/firebase-config";
-import { useState } from "react";
+import { auth, firestore } from "../firebase-config/firebase-config";
+import { useEffect, useRef, useState } from "react";
 import FormEditor from "../formEditor/FormEditor";
+import { collection, getDocs } from "firebase/firestore";
 
 const Dashboard = ({ dashboardOpen, setDashboardOpen }) => {
 
   const [formEditorOpen, setFormEditorOpen] = useState(false);
 
-  const posts = [
-    {
-      id: 1,
-      title: 'Boost your conversion rate',
-      href: '#',
-      description:
-        'Illo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. Non aliquid explicabo necessitatibus unde. Sed exercitationem placeat consectetur nulla deserunt vel. Iusto corrupti dicta.',
-      date: 'Mar 16, 2020',
-      datetime: '2020-03-16',
-      category: { title: 'Marketing', href: '#' },
-      author: {
-        name: 'Michael Foster',
-        role: 'Co-Founder / CTO',
-        href: '#',
-        imageUrl:
-          'https://images.unsplash.com/photo-1519244703995-f4e0f30006d5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-      },
-    },
-    {
-      id: 2,
-      title: 'How to use search engine optimization to drive sales',
-      href: '#',
-      description:
-        'Illo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. Non aliquid explicabo necessitatibus unde. Sed exercitationem placeat consectetur nulla deserunt vel. Iusto corrupti dicta.',
-      date: 'Mar 16, 2020',
-      datetime: '2020-03-16',
-      category: { title: 'Marketing', href: '#' },
-      author: {
-        name: 'Lindsay Walton',
-        role: 'Co-Founder / CTO',
-        href: '#',
-        imageUrl:
-          'https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-      },
-    },
-    {
-      id: 3,
-      title: 'Improve your customer experience',
-      href: '#',
-      description:
-        'Illo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. Non aliquid explicabo necessitatibus unde. Sed exercitationem placeat consectetur nulla deserunt vel. Iusto corrupti dicta.',
-      date: 'Mar 16, 2020',
-      datetime: '2020-03-16',
-      category: { title: 'Marketing', href: '#' },
-      author: {
-        name: 'Tim Cook',
-        role: 'Co-Founder / CTO',
-        href: '#',
-        imageUrl:
-          'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-      },
-    }, {
-      id: 4,
-      title: 'Boost your conversion rate',
-      href: '#',
-      description:
-        'Illo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. Non aliquid explicabo necessitatibus unde. Sed exercitationem placeat consectetur nulla deserunt vel. Iusto corrupti dicta.',
-      date: 'Mar 16, 2020',
-      datetime: '2020-03-16',
-      category: { title: 'Marketing', href: '#' },
-      author: {
-        name: 'Michael Foster',
-        role: 'Co-Founder / CTO',
-        href: '#',
-        imageUrl:
-          'https://images.unsplash.com/photo-1519244703995-f4e0f30006d5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-      },
-    }
-    // More posts...
-  ]
+  // const [form, setForm] = useState(null);
+  const form = useRef(null);
+
+  const [formData, setFormData] = useState([]);
+
+  useEffect(() => {
+    fetchPost();
+  }, []);
+
+  const fetchPost = async () => {
+
+    await getDocs(collection(firestore, "form_templates"))
+      .then((querySnapshot) => {
+        setFormData([]);
+        querySnapshot.forEach(element => {
+          // console.log(element.data());
+          setFormData(arr => [...arr, element])
+        });
+      })
+    console.log(formData);
+  }
+
+  const openFormEditor = (form1) => {
+    setFormEditorOpen(true)
+    // setForm(form);
+    form.current = form1
+  }
+
+
   return (
 
     <>
@@ -89,8 +49,8 @@ const Dashboard = ({ dashboardOpen, setDashboardOpen }) => {
             </p>
           </div>
           <div className=" mx-auto mt-6 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 border-t border-gray-200 pt-4 sm:mt-10 sm:pt-4 lg:mx-0 lg:max-w-none lg:grid-cols-3">
-            {posts.map((post) => (
-              <article key={post.id} className="px-8 pt-80 pb-5 relative flex rounded-2xl flex-col items-start justify-between cursor-pointer isolate overflow-hidden">
+            {formData.map((form) => (
+              <article key={form.id} className="px-8 pt-80 pb-5 relative flex rounded-2xl flex-col items-start justify-between cursor-pointer isolate overflow-hidden">
                 <img className="h-full inset-0 w-full -z-10 absolute object-cover " src="https://images.unsplash.com/photo-1496128858413-b36217c2ce36?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=3603&q=80" alt="" />
 
                 <div className="absolute top-3 right-4">
@@ -103,7 +63,7 @@ const Dashboard = ({ dashboardOpen, setDashboardOpen }) => {
                     inline
                     arrowIcon={false}
                   >
-                    <Dropdown.Item className="gap-2" onClick={() => setFormEditorOpen(true)}>
+                    <Dropdown.Item className="gap-2" onClick={() => openFormEditor(form)}>
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
                         <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                       </svg>
@@ -120,10 +80,10 @@ const Dashboard = ({ dashboardOpen, setDashboardOpen }) => {
                 <div className="absolute -z-10 inset-0 bg-gradient-to-t from-[#111827]"></div>
 
                 <div className="flex items-center gap-x-4 text-xs">
-                  <time dateTime={post.datetime} className="text-gray-300 text-sm leading-6 mr-8">
-                    {post.date}
+                  <time dateTime={form.data().created} className="text-gray-300 text-sm leading-6 mr-8">
+                    {form.data().date}
                   </time>
-                  <div className="relative flex items-center gap-x-2">
+                  {/* <div className="relative flex items-center gap-x-2">
                     <img src={post.author.imageUrl} alt="" className="h-7 w-7 rounded-full bg-gray-50" />
                     <div className="text-sm">
                       <p className="font-semibold text-gray-300">
@@ -133,24 +93,23 @@ const Dashboard = ({ dashboardOpen, setDashboardOpen }) => {
                         </a>
                       </p>
                     </div>
-                  </div>
+                  </div> */}
 
                 </div>
                 <div className="group relative">
                   <h3 className="mt-3 text-lg font-semibold leading-6 text-white group-hover:text-gray-600">
-                    <a href={post.href}>
+                    <a href="#">
                       <span className="absolute inset-0" />
-                      {post.title}
+                      {form.data().title}
                     </a>
                   </h3>
                 </div>
-
               </article>
             ))}
           </div>
         </div>
       </div> : ""}
-      <FormEditor formEditorOpen={formEditorOpen} setFormEditorOpen={() => setFormEditorOpen(false)} />
+      <FormEditor form={form.current} formEditorOpen={formEditorOpen} setFormEditorOpen={() => setFormEditorOpen(false)} />
     </>
   );
 }
