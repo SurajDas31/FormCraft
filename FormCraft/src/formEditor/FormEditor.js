@@ -1,7 +1,7 @@
 import { CKEditor } from 'ckeditor4-react';
 import { Button, Dialog, DialogTitle, Transition } from '@headlessui/react';
 import { Fragment, useEffect, useRef, useState } from 'react';
-import { Timestamp, addDoc, collection, updateDoc } from 'firebase/firestore';
+import { Timestamp, addDoc, collection, doc, updateDoc } from 'firebase/firestore';
 import { auth, firestore } from '../firebase-config/firebase-config';
 
 
@@ -41,11 +41,10 @@ const FormEditor = ({ form, formEditorOpen, setFormEditorOpen }) => {
             }
         } else {
             try {
-
-                await updateDoc(collection(firestore, "form_templates", form.id), {
-
+                
+                await updateDoc(doc(firestore, "form_templates", form.id), {
                     title: form.data().title,
-                    created: Timestamp.now(),
+                    // created: Timestamp.now(),
                     rawData: editorContent.current,
                     user: auth.currentUser.uid
                 })

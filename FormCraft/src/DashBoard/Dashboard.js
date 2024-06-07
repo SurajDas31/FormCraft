@@ -2,7 +2,7 @@ import { Dropdown } from "flowbite-react";
 import { auth, firestore } from "../firebase-config/firebase-config";
 import { useEffect, useRef, useState } from "react";
 import FormEditor from "../formEditor/FormEditor";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 
 const Dashboard = ({ dashboardOpen, setDashboardOpen }) => {
 
@@ -15,12 +15,13 @@ const Dashboard = ({ dashboardOpen, setDashboardOpen }) => {
 
   useEffect(() => {
     fetchPost();
-  }, []);
+  }, [formEditorOpen]);
 
   const fetchPost = async () => {
 
-    await getDocs(collection(firestore, "form_templates"))
-      .then((querySnapshot) => {
+    const q = await query(collection(firestore, "form_templates"), where('user','==',auth.currentUser.uid))
+      
+    getDocs(q).then((querySnapshot) => {
         setFormData([]);
         querySnapshot.forEach(element => {
           // console.log(element.data());
