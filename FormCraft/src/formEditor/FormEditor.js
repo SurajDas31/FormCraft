@@ -2,14 +2,20 @@ import { CKEditor } from 'ckeditor4-react';
 import { Button, Dialog, DialogTitle, Transition } from '@headlessui/react';
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { Timestamp, addDoc, collection, doc, updateDoc } from 'firebase/firestore';
-import { auth, firestore } from '../firebase-config/firebase-config';
-
+import { auth, firestore, storage } from '../firebase-config/firebase-config';
+import { ref, uploadBytes } from 'firebase/storage';
+import * as htmlToImage from 'html-to-image';
 
 const FormEditor = ({ form, formEditorOpen, setFormEditorOpen }) => {
 
     const [saveButtonDisable, setSaveButtonDisable] = useState(true);
 
+    const formBody = useRef('');
+
+    const formName = useRef('');
+
     useEffect(() => {
+        formName.current = form?.data().title;
         console.log(form);
         // fetchPost();
     }, [formEditorOpen]);
@@ -18,6 +24,7 @@ const FormEditor = ({ form, formEditorOpen, setFormEditorOpen }) => {
 
     const handleEditorChange = (event, editor) => {
         setSaveButtonDisable(false);
+        formBody.current = event.editor.document.getDocumentElement().$
         const text = event.editor.getData();
         editorContent.current = text;
         console.log(editorContent);
@@ -29,7 +36,7 @@ const FormEditor = ({ form, formEditorOpen, setFormEditorOpen }) => {
         if (form === null) {
             try {
                 await addDoc(collection(firestore, 'form_templates'), {
-                    title: "Test",
+                    title: formName.current,
                     created: Timestamp.now(),
                     rawData: editorContent.current,
                     user: auth.currentUser.uid
@@ -41,9 +48,9 @@ const FormEditor = ({ form, formEditorOpen, setFormEditorOpen }) => {
             }
         } else {
             try {
-                
+
                 await updateDoc(doc(firestore, "form_templates", form.id), {
-                    title: form.data().title,
+                    title: formName.current,
                     // created: Timestamp.now(),
                     rawData: editorContent.current,
                     user: auth.currentUser.uid
@@ -55,12 +62,54 @@ const FormEditor = ({ form, formEditorOpen, setFormEditorOpen }) => {
             }
         }
 
+        // Converting HTML to IMAGE
 
+        let file;
+        if (form.data().rawData !== editorContent.current) {
+            try {
+                htmlToImage.toPng(formBody.current, { quality: 0.95 }).then(dataUrl => {
+
+                    let response = fetch(dataUrl);
+                    let data = response.blob();
+                    let metadata = {
+                        type: 'image/png'
+                    };
+                    file = new File([data], `${form.id}.png`, metadata);
+
+                }).catch(err => console.log(err));
+            } catch (err) {
+                alert(err)
+            }
+
+
+            // Store the IMAGE in firebase storage
+            try {
+                const imageRef = ref(storage, `${form.id}`)
+
+                uploadBytes(imageRef, imageUpload)
+                .then((snapshot) => {
+                  getDownloadURL(snapshot.ref)
+                    .then((url) => {
+                      saveData(url);
+                    })
+                    .catch((error) => {
+                      toastifyError(error.message);
+                    });
+                })
+                .catch((error) => {
+                  toastifyError(error.message);
+                });
+
+            } catch (err) {
+                alert(err)
+            }
+
+        }
     }
 
     return (
         <>
-            <Transition.Root show={formEditorOpen} as={Fragment} >
+            <Transition.Root show={formEditorOpen} as={Fragment}>
                 <Dialog className="relative z-10" onClose={() => { setFormEditorOpen() }}>
                     <Transition.Child
                         as={Fragment}
@@ -75,7 +124,7 @@ const FormEditor = ({ form, formEditorOpen, setFormEditorOpen }) => {
                     </Transition.Child>
 
                     <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
-                        <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                        <div className="flex min-h-full h-3/5 items-end justify-center p-4 text-center sm:items-center sm:p-0">
                             <Transition.Child
                                 as={Fragment}
                                 enter="ease-out duration-300"
@@ -86,8 +135,8 @@ const FormEditor = ({ form, formEditorOpen, setFormEditorOpen }) => {
                                 leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                             >
                                 <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-11/12">
-                                    <DialogTitle as="h2" className="text-xl font-medium bg-gradient-to-bl  from-[#816ed6] p-4">
-                                        <input id="formName" type='text' className="bg-inherit border-none focus:border-none" defaultValue={form === null ? "Test" : form.data().title} />
+                                    <DialogTitle as="h2" className="text-xl font-medium bg-gradient-to-bl  from-[#816ed6] p-2">
+                                        <input id="formName" type='text' className="bg-inherit border-none focus:border-none" onChange={(e) => formName.current = e.target.value} defaultValue={form === null ? "Test" : form.data().title} />
                                     </DialogTitle>
                                     <div>
                                         <CKEditor
