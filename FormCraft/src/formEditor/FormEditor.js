@@ -3,7 +3,7 @@ import { Button, Dialog, DialogTitle, Transition } from '@headlessui/react';
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { Timestamp, addDoc, collection, doc, updateDoc } from 'firebase/firestore';
 import { auth, firestore, storage } from '../firebase-config/firebase-config';
-import { ref, uploadBytes } from 'firebase/storage';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import * as htmlToImage from 'html-to-image';
 
 const FormEditor = ({ form, formEditorOpen, setFormEditorOpen }) => {
@@ -29,6 +29,53 @@ const FormEditor = ({ form, formEditorOpen, setFormEditorOpen }) => {
         editorContent.current = text;
         console.log(editorContent);
     };
+
+    const uploadImage = async (event) => {
+        // Converting HTML to IMAGE
+    
+        let image;
+        if (form?.data().rawData !== editorContent.current) {
+            try {
+                await htmlToImage.toPng(formBody.current, { quality: 0.95 }).then(async(dataUrl) => {
+                    let response = await fetch(dataUrl);
+
+                    let data = await response.blob();
+    
+                    console.log(data);
+                    let metadata = {
+                        type: 'image/png'
+                    };
+                    image = new File([data], `${form.id}.png`, metadata);
+                    console.log(image);
+                }).catch(err => console.log(err));
+            } catch (err) {
+                alert(err)
+            }
+
+            // Store the IMAGE in firebase storage
+            try {
+                const imageRef = ref(storage, `formcraft/form-templates/${form.id}`)
+
+                uploadBytes(imageRef, image)
+                    .then((snapshot) => {
+                        getDownloadURL(snapshot.ref)
+                            .then((url) => {
+                                //   saveData(url);
+                            })
+                            .catch((error) => {
+                                console.log(error)
+                            });
+                    })
+                    .catch((error) => {
+                        console.log(error)
+                    });
+
+            } catch (err) {
+                alert(err)
+            }
+
+        }
+    }
 
     const saveForm = async (event) => {
         event.preventDefault();
@@ -62,49 +109,8 @@ const FormEditor = ({ form, formEditorOpen, setFormEditorOpen }) => {
             }
         }
 
-        // Converting HTML to IMAGE
+        uploadImage();
 
-        let file;
-        if (form.data().rawData !== editorContent.current) {
-            try {
-                htmlToImage.toPng(formBody.current, { quality: 0.95 }).then(dataUrl => {
-
-                    let response = fetch(dataUrl);
-                    let data = response.blob();
-                    let metadata = {
-                        type: 'image/png'
-                    };
-                    file = new File([data], `${form.id}.png`, metadata);
-
-                }).catch(err => console.log(err));
-            } catch (err) {
-                alert(err)
-            }
-
-
-            // Store the IMAGE in firebase storage
-            try {
-                const imageRef = ref(storage, `${form.id}`)
-
-                uploadBytes(imageRef, imageUpload)
-                .then((snapshot) => {
-                  getDownloadURL(snapshot.ref)
-                    .then((url) => {
-                      saveData(url);
-                    })
-                    .catch((error) => {
-                      toastifyError(error.message);
-                    });
-                })
-                .catch((error) => {
-                  toastifyError(error.message);
-                });
-
-            } catch (err) {
-                alert(err)
-            }
-
-        }
     }
 
     return (

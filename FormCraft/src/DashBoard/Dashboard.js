@@ -1,8 +1,9 @@
 import { Dropdown } from "flowbite-react";
-import { auth, firestore } from "../firebase-config/firebase-config";
+import { auth, firestore, storage } from "../firebase-config/firebase-config";
 import { useEffect, useRef, useState } from "react";
 import FormEditor from "../formEditor/FormEditor";
 import { collection, getDocs, query, where } from "firebase/firestore";
+import { getDownloadURL, ref } from "firebase/storage";
 
 const Dashboard = ({ dashboardOpen, setDashboardOpen }) => {
 
@@ -13,23 +14,41 @@ const Dashboard = ({ dashboardOpen, setDashboardOpen }) => {
 
   const [formData, setFormData] = useState([]);
 
+  const imageFormData = useRef({});
+
   useEffect(() => {
-    fetchPost();
+    if (formEditorOpen === false)
+      fetchPost();
   }, [formEditorOpen]);
 
   const fetchPost = async () => {
 
-    const q = await query(collection(firestore, "form_templates"), where('user','==',auth.currentUser.uid))
-      
+    const q = await query(collection(firestore, "form_templates"), where('user', '==', auth.currentUser.uid))
+
     getDocs(q).then((querySnapshot) => {
-        setFormData([]);
-        querySnapshot.forEach(element => {
-          // console.log(element.data());
-          setFormData(arr => [...arr, element])
-        });
-      })
-    console.log(formData);
+      setFormData([]);
+      querySnapshot.forEach(async element => {
+        // console.log(element.data());
+        setFormData(arr => [...arr, element])
+        await getTemplateImage(element);
+        console.log(imageFormData);
+      });
+    })
   }
+
+  const getTemplateImage = async (element) => {
+    console.log(element)
+
+    const fileRef = await ref(storage, `formcraft/form-templates/${element.id}`)
+    const url = await getDownloadURL(fileRef);
+    const formId = element.id
+    // setFormData(arr => [...arr, {"imageUrl": url}])
+    // setImageFormData(arr => ({...arr, formId: url}))
+    imageFormData.current = { ...imageFormData.current, formId: url }
+    return url;
+  }
+
+
 
   const openFormEditor = (form1) => {
     setFormEditorOpen(true)
@@ -37,10 +56,9 @@ const Dashboard = ({ dashboardOpen, setDashboardOpen }) => {
     form.current = form1
   }
 
-
   return (
-
     <>
+
       {dashboardOpen ? <div className="py-8 sm:py-12 lg:py-14">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="lg:mx-0 text-center">
@@ -52,7 +70,7 @@ const Dashboard = ({ dashboardOpen, setDashboardOpen }) => {
           <div className=" mx-auto mt-6 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 border-t border-gray-200 pt-4 sm:mt-10 sm:pt-4 lg:mx-0 lg:max-w-none lg:grid-cols-3">
             {formData.map((form) => (
               <article key={form.id} className="px-8 pt-80 pb-5 relative flex rounded-2xl flex-col items-start justify-between cursor-pointer isolate overflow-hidden">
-                <img className="h-full inset-0 w-full -z-10 absolute object-cover " src="https://images.unsplash.com/photo-1496128858413-b36217c2ce36?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=3603&q=80" alt="" />
+                <img className="h-full inset-0 w-full -z-10 absolute object-cover " src={imageFormData.current[form.id]} alt="" />
 
                 <div className="absolute top-3 right-4">
                   <Dropdown
@@ -113,6 +131,6 @@ const Dashboard = ({ dashboardOpen, setDashboardOpen }) => {
       <FormEditor form={form.current} formEditorOpen={formEditorOpen} setFormEditorOpen={() => setFormEditorOpen(false)} />
     </>
   );
-}
 
+}
 export default Dashboard;
