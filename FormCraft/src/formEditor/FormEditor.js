@@ -15,7 +15,7 @@ const FormEditor = ({ form, formEditorOpen, setFormEditorOpen }) => {
     const formName = useRef('');
 
     useEffect(() => {
-        formName.current = form?.data().title;
+        formName.current = form?.title;
         console.log(form);
         // fetchPost();
     }, [formEditorOpen]);
@@ -34,7 +34,7 @@ const FormEditor = ({ form, formEditorOpen, setFormEditorOpen }) => {
         // Converting HTML to IMAGE
     
         let image;
-        if (form?.data().rawData !== editorContent.current) {
+        if (form?.rawData !== editorContent.current) {
             try {
                 await htmlToImage.toPng(formBody.current, { quality: 0.95 }).then(async(dataUrl) => {
                     let response = await fetch(dataUrl);
@@ -142,12 +142,12 @@ const FormEditor = ({ form, formEditorOpen, setFormEditorOpen }) => {
                             >
                                 <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-11/12">
                                     <DialogTitle as="h2" className="text-xl font-medium bg-gradient-to-bl  from-[#816ed6] p-2">
-                                        <input id="formName" type='text' className="bg-inherit border-none focus:border-none" onChange={(e) => formName.current = e.target.value} defaultValue={form === null ? "Test" : form.data().title} />
+                                        <input id="formName" type='text' className="bg-inherit border-none focus:border-none" onChange={(e) => formName.current = e.target.value} defaultValue={form === null ? "Test" : form.title} />
                                     </DialogTitle>
                                     <div>
                                         <CKEditor
                                             onChange={handleEditorChange}
-                                            initData={form?.data().rawData}
+                                            initData={form?.rawData}
                                         />
                                     </div>
                                     <div className="flex p-4 justify-end space-x-2">

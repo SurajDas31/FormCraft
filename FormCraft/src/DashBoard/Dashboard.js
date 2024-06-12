@@ -2,7 +2,7 @@ import { Dropdown } from "flowbite-react";
 import { auth, firestore, storage } from "../firebase-config/firebase-config";
 import { useEffect, useRef, useState } from "react";
 import FormEditor from "../formEditor/FormEditor";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
 import { getDownloadURL, ref } from "firebase/storage";
 
 const Dashboard = ({ dashboardOpen, setDashboardOpen }) => {
@@ -14,8 +14,6 @@ const Dashboard = ({ dashboardOpen, setDashboardOpen }) => {
 
   const [formData, setFormData] = useState([]);
 
-  const imageFormData = useRef({});
-
   useEffect(() => {
     if (formEditorOpen === false)
       fetchPost();
@@ -23,42 +21,87 @@ const Dashboard = ({ dashboardOpen, setDashboardOpen }) => {
 
   const fetchPost = async () => {
 
-    const q = await query(collection(firestore, "form_templates"), where('user', '==', auth.currentUser.uid))
+    setFormData([])
+    const q = query(collection(firestore, "form_templates"), where('user', '==', auth.currentUser.uid))
 
     getDocs(q).then((querySnapshot) => {
-      setFormData([]);
-      querySnapshot.forEach(async element => {
+      querySnapshot.forEach(element => {
         // console.log(element.data());
-        setFormData(arr => [...arr, element])
-        await getTemplateImage(element);
-        console.log(imageFormData);
+        // setFormData(arr => [...arr, element])
+        getTemplateImage(element);
       });
     })
   }
 
   const getTemplateImage = async (element) => {
-    console.log(element)
-
-    const fileRef = await ref(storage, `formcraft/form-templates/${element.id}`)
+    const fileRef = ref(storage, `formcraft/form-templates/${element.id}`)
     const url = await getDownloadURL(fileRef);
-    const formId = element.id
-    // setFormData(arr => [...arr, {"imageUrl": url}])
-    // setImageFormData(arr => ({...arr, formId: url}))
-    imageFormData.current = { ...imageFormData.current, formId: url }
-    return url;
+
+    let epochTime = element.data().created.seconds;
+    let date = new Date(0)
+    date.setUTCSeconds(epochTime)
+    let month;
+
+    switch (date.getUTCMonth()) {
+      case 1:
+        month = "Jan"
+        break;
+      case 2:
+        month = "Feb"
+        break;
+      case 3:
+        month = "Mar"
+        break;
+      case 4:
+        month = "Apr"
+        break;
+      case 5:
+        month = "May"
+        break;
+      case 6:
+        month = "Jun"
+        break;
+      case 7:
+        month = "Jul"
+        break;
+      case 8:
+        month = "Aug"
+        break;
+      case 9:
+        month = "Sep"
+        break;
+      case 10:
+        month = "Oct"
+        break;
+      case 11:
+        month = "Nov"
+        break;
+      case 12:
+        month = "Dec"
+        break;
+      default:
+        month = ""
+        break;
+    }
+    const newData = {
+      id: element.id,
+      title: element.data().title,
+      date: month + " " + date.getDate() + ", " + date.getFullYear(),
+      url: url,
+      rawData: element.data().rawData
+    }
+    setFormData(arr => [...arr, newData])
   }
-
-
 
   const openFormEditor = (form1) => {
     setFormEditorOpen(true)
     // setForm(form);
     form.current = form1
+    console.log(formData);
   }
 
   return (
     <>
-
       {dashboardOpen ? <div className="py-8 sm:py-12 lg:py-14">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="lg:mx-0 text-center">
@@ -68,9 +111,10 @@ const Dashboard = ({ dashboardOpen, setDashboardOpen }) => {
             </p>
           </div>
           <div className=" mx-auto mt-6 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 border-t border-gray-200 pt-4 sm:mt-10 sm:pt-4 lg:mx-0 lg:max-w-none lg:grid-cols-3">
-            {formData.map((form) => (
+            {formData.map(form =>
+            (
               <article key={form.id} className="px-8 pt-80 pb-5 relative flex rounded-2xl flex-col items-start justify-between cursor-pointer isolate overflow-hidden">
-                <img className="h-full inset-0 w-full -z-10 absolute object-cover " src={imageFormData.current[form.id]} alt="" />
+                <img className="h-full inset-0 w-full -z-10 absolute object-cover " src={form.url} alt="" />
 
                 <div className="absolute top-3 right-4">
                   <Dropdown
@@ -99,8 +143,8 @@ const Dashboard = ({ dashboardOpen, setDashboardOpen }) => {
                 <div className="absolute -z-10 inset-0 bg-gradient-to-t from-[#111827]"></div>
 
                 <div className="flex items-center gap-x-4 text-xs">
-                  <time dateTime={form.data().created} className="text-gray-300 text-sm leading-6 mr-8">
-                    {form.data().date}
+                  <time dateTime={form.date} className="text-gray-300 text-sm leading-6 mr-8">
+                    {form.date}
                   </time>
                   {/* <div className="relative flex items-center gap-x-2">
                     <img src={post.author.imageUrl} alt="" className="h-7 w-7 rounded-full bg-gray-50" />
@@ -119,12 +163,13 @@ const Dashboard = ({ dashboardOpen, setDashboardOpen }) => {
                   <h3 className="mt-3 text-lg font-semibold leading-6 text-white group-hover:text-gray-600">
                     <a href="#">
                       <span className="absolute inset-0" />
-                      {form.data().title}
+                      {form.title}
                     </a>
                   </h3>
                 </div>
               </article>
-            ))}
+            )
+            )}
           </div>
         </div>
       </div> : ""}
