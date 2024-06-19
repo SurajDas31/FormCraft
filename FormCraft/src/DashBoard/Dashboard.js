@@ -35,8 +35,9 @@ const Dashboard = ({ dashboardOpen, setDashboardOpen }) => {
 
   const getTemplateImage = async (element) => {
     const fileRef = ref(storage, `formcraft/form-templates/${element.id}`)
-    const url = await getDownloadURL(fileRef);
 
+    const url = await getDownloadURL(fileRef).catch(e => console.log(e));
+    console.log(url);
     let epochTime = element.data().created.seconds;
     let date = new Date(0)
     date.setUTCSeconds(epochTime)
